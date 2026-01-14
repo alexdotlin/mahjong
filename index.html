@@ -10,27 +10,37 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap');
         
         :root {
-            --primary-red: #cc0000; /* 更深、更穩重的紅色 */
+            --primary-red: #cc0000;
             --dark-gold: #b38600;
         }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #fffaf0; /* 象牙色背景，保護眼睛 */
+            background-color: #fffaf0;
             color: #1a1a1a;
             margin: 0;
             padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
         }
 
-        /* 讓卡片更紮實 */
+        /* 鎖定畫面樣式 */
+        #authBarrier {
+            position: fixed;
+            inset: 0;
+            background: #cc0000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
         .festive-card {
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            border: 3px solid #ff0000; /* 加粗邊框 */
+            border: 3px solid #ff0000;
         }
 
-        /* 超大文字按鈕 */
         .btn-large {
             background-color: var(--primary-red);
             color: white;
@@ -44,10 +54,6 @@
             box-shadow: 0 4px 0 #800000;
             display: block;
             width: 100%;
-        }
-        .btn-large:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #800000;
         }
 
         .btn-gold-large {
@@ -64,7 +70,6 @@
             width: 100%;
         }
 
-        /* 日曆格點放大 */
         .calendar-day {
             aspect-ratio: 1.1;
             display: flex;
@@ -72,7 +77,7 @@
             justify-content: center;
             cursor: pointer;
             border-radius: 8px;
-            font-size: 1.2rem; /* 數字變大 */
+            font-size: 1.2rem;
             font-weight: 700;
             background: #fdfdfd;
             border: 2px solid #eee;
@@ -92,7 +97,6 @@
             font-size: 14px;
         }
 
-        /* 輸入框變大 */
         input, select {
             border: 3px solid #cccccc;
             border-radius: 10px;
@@ -117,133 +121,159 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-5xl font-black text-red-700 mb-2">🧧 2026 阿土伯</h1>
-            <p class="text-lg text-red-500 font-bold">字體加大・簡單好用</p>
-        </header>
+    <!-- 身分驗證鎖定畫面 -->
+    <div id="authBarrier">
+        <div class="festive-card p-8 max-w-sm w-full text-center">
+            <h2 class="text-3xl font-black text-red-700 mb-6">🧧 雀神入口</h2>
+            <p class="text-lg font-bold mb-4 text-gray-600">請輸入管理員金鑰</p>
+            <input type="password" id="adminPass" class="mb-6 text-center tracking-widest" placeholder="在此輸入密碼">
+            <button onclick="checkAuth()" class="btn-large">驗證身分</button>
+            <p id="authError" class="mt-4 text-red-600 font-bold hidden">密碼不對喔，再試一次！</p>
+        </div>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-            
-            <!-- Left -->
-            <div class="md:col-span-5 space-y-8">
-                <!-- 日曆：選取日期 -->
-                <div class="festive-card p-6">
-                    <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
-                    <div class="flex justify-between items-center mb-6">
-                        <button onclick="changeMonth(-1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❮</button>
-                        <h2 id="currentMonthDisplay" class="text-2xl font-black">2026年 1月</h2>
-                        <button onclick="changeMonth(1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❯</button>
+    <!-- 主要內容區 (初始隱藏) -->
+    <div id="mainContent" class="hidden">
+        <div class="max-w-4xl mx-auto">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl md:text-5xl font-black text-red-700 mb-2">🧧 2026 阿土伯</h1>
+                <p class="text-lg text-red-500 font-bold">字體加大・簡單好用</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <!-- Left -->
+                <div class="md:col-span-5 space-y-8">
+                    <div class="festive-card p-6">
+                        <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
+                        <div class="flex justify-between items-center mb-6">
+                            <button onclick="changeMonth(-1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❮</button>
+                            <h2 id="currentMonthDisplay" class="text-2xl font-black">2026年 1月</h2>
+                            <button onclick="changeMonth(1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❯</button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-3 text-center text-sm font-black text-red-600 mb-2">
+                            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+                        </div>
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-3"></div>
                     </div>
-                    <div class="grid grid-cols-7 gap-3 text-center text-sm font-black text-red-600 mb-2">
-                        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+
+                    <div class="festive-card p-6">
+                        <h3 class="text-2xl font-black mb-4 flex items-center text-red-700 border-b-4 border-red-100 pb-2">
+                            🏆 總排行榜
+                        </h3>
+                        <div id="overallStatsList" class="space-y-3">
+                            <p class="text-center text-gray-500 py-4">目前還沒開始比賽喔！</p>
+                        </div>
                     </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-3"></div>
+
+                    <div class="festive-card p-6 space-y-4">
+                        <h3 class="text-xl font-black text-center mb-2">💾 資料備份</h3>
+                        <button onclick="exportToCSV()" class="btn-gold-large">把資料存到手機 (CSV)</button>
+                        <button onclick="document.getElementById('importInput').click()" class="text-lg font-bold w-full p-4 border-2 border-dashed border-gray-400 rounded-xl text-gray-600">讀取舊資料</button>
+                        <input type="file" id="importInput" accept=".csv" onchange="importFromCSV(event)">
+                    </div>
                 </div>
 
-                <!-- 英雄榜 -->
-                <div class="festive-card p-6">
-                    <h3 class="text-2xl font-black mb-4 flex items-center text-red-700 border-b-4 border-red-100 pb-2">
-                        🏆 總排行榜
-                    </h3>
-                    <div id="overallStatsList" class="space-y-3">
-                        <p class="text-center text-gray-500 py-4">目前還沒開始比賽喔！</p>
-                    </div>
-                </div>
+                <!-- Right -->
+                <div class="md:col-span-7">
+                    <div class="festive-card p-6 md:p-8">
+                        <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
+                            <div>
+                                <span class="text-lg font-bold text-gray-500">正在輸入日期：</span>
+                                <h2 class="text-4xl font-black text-red-600" id="selectedDateDisplay">2026-01-01</h2>
+                            </div>
+                            <div id="balanceBadge" class="p-3 rounded-xl text-lg font-black bg-gray-200 text-gray-600">
+                                未算帳
+                            </div>
+                        </div>
 
-                <!-- 備份區 -->
-                <div class="festive-card p-6 space-y-4">
-                    <h3 class="text-xl font-black text-center mb-2">💾 資料備份</h3>
-                    <button onclick="exportToCSV()" class="btn-gold-large">把資料存到手機 (CSV)</button>
-                    <button onclick="document.getElementById('importInput').click()" class="text-lg font-bold w-full p-4 border-2 border-dashed border-gray-400 rounded-xl text-gray-600">讀取舊資料</button>
-                    <input type="file" id="importInput" accept=".csv" onchange="importFromCSV(event)">
-                </div>
-            </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label class="big-label">💰 打多少 (底/台)</label>
+                                <select id="gameType">
+                                    <option value="30/10">30 / 10</option>
+                                    <option value="50/20">50 / 20</option>
+                                    <option value="100/20">100 / 20</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="big-label">📍 哪裡打 (地點)</label>
+                                <input type="text" id="location" placeholder="例如：家裡、小明家">
+                            </div>
+                            <div>
+                                <label class="big-label">⚔️ 打幾將</label>
+                                <input type="number" id="rounds" value="1" min="1">
+                            </div>
+                            <div>
+                                <label class="big-label">🧧 幸運財位</label>
+                                <select id="fortunePosition">
+                                    <option value="">--- 請選擇 ---</option>
+                                    <option value="客廳位">客廳位</option>
+                                    <option value="靠窗戶">靠窗戶</option>
+                                    <option value="電視位">電視位</option>
+                                    <option value="沙發位">沙發位</option>
+                                </select>
+                            </div>
+                        </div>
 
-            <!-- Right: 填寫區 -->
-            <div class="md:col-span-7">
-                <div class="festive-card p-6 md:p-8">
-                    <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
-                        <div>
-                            <span class="text-lg font-bold text-gray-500">正在輸入日期：</span>
-                            <h2 class="text-4xl font-black text-red-600" id="selectedDateDisplay">2026-01-01</h2>
+                        <div class="mb-8">
+                            <h3 class="big-label border-l-8 border-red-600 pl-3 mb-4">第二步：填入輸贏</h3>
+                            <div class="overflow-hidden border-2 border-gray-100 rounded-xl">
+                                <table class="w-full text-left">
+                                    <thead class="bg-red-50">
+                                        <tr class="text-lg font-black">
+                                            <th class="p-4">麻友姓名</th>
+                                            <th class="p-4 text-center">輸贏金額</th>
+                                            <th class="p-4 text-right">目前小計</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="playerTableBody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div id="balanceBadge" class="p-3 rounded-xl text-lg font-black bg-gray-200 text-gray-600">
-                            未算帳
-                        </div>
-                    </div>
 
-                    <!-- 基本設定 -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                        <div>
-                            <label class="big-label">💰 打多少 (底/台)</label>
-                            <select id="gameType">
-                                <option value="30/10">30 / 10</option>
-                                <option value="50/20">50 / 20</option>
-                                <option value="100/20">100 / 20</option>
-                            </select>
+                        <div class="space-y-4">
+                            <div class="text-lg text-red-600 font-black text-center" id="errorMsg">
+                                ※ 帳目平衡後才能存檔喔！
+                            </div>
+                            <button id="saveBtn" onclick="saveData()" class="btn-large">
+                                🀄 確認存檔 (發財啦！)
+                            </button>
+                            <button onclick="clearForm()" class="text-lg font-bold text-gray-400 w-full py-4 underline">
+                                清除本日紀錄
+                            </button>
                         </div>
-                        <div>
-                            <label class="big-label">📍 哪裡打 (地點)</label>
-                            <input type="text" id="location" placeholder="例如：家裡、小明家">
-                        </div>
-                        <div>
-                            <label class="big-label">⚔️ 打幾將</label>
-                            <input type="number" id="rounds" value="1" min="1">
-                        </div>
-                        <div>
-                            <label class="big-label">🧧 幸運財位</label>
-                            <select id="fortunePosition">
-                                <option value="">--- 請選擇 ---</option>
-                                <option value="客廳位">客廳位</option>
-                                <option value="靠窗戶">靠窗戶</option>
-                                <option value="電視位">電視位</option>
-                                <option value="沙發位">沙發位</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 算帳區 -->
-                    <div class="mb-8">
-                        <h3 class="big-label border-l-8 border-red-600 pl-3 mb-4">第二步：填入輸贏</h3>
-                        <div class="overflow-hidden border-2 border-gray-100 rounded-xl">
-                            <table class="w-full text-left">
-                                <thead class="bg-red-50">
-                                    <tr class="text-lg font-black">
-                                        <th class="p-4">麻友姓名</th>
-                                        <th class="p-4 text-center">輸贏金額</th>
-                                        <th class="p-4 text-right">目前小計</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="playerTableBody" class="divide-y divide-gray-100">
-                                    <!-- JS 會生成超大輸入格 -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 按鈕 -->
-                    <div class="space-y-4">
-                        <div class="text-lg text-red-600 font-black text-center" id="errorMsg">
-                            ※ 帳目平衡後才能存檔喔！
-                        </div>
-                        <button id="saveBtn" onclick="saveData()" class="btn-large">
-                            🀄 確認存檔 (發財啦！)
-                        </button>
-                        <button onclick="clearForm()" class="text-lg font-bold text-gray-400 w-full py-4 underline">
-                            清除本日紀錄
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 訊息提示 -->
     <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-10 py-6 rounded-2xl bg-black/90 text-white text-2xl font-black opacity-0 transition-opacity pointer-events-none z-50 shadow-2xl"></div>
 
     <script>
+        // 設定金鑰 (您可以自行修改此密碼)
+        const SECRET_KEY = "8888"; 
+
+        function checkAuth() {
+            const input = document.getElementById('adminPass').value;
+            const error = document.getElementById('authError');
+            if (input === SECRET_KEY) {
+                document.getElementById('authBarrier').style.display = 'none';
+                document.getElementById('mainContent').classList.remove('hidden');
+                init();
+                sessionStorage.setItem('mahjong_authed', 'true');
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        // 自動檢查是否已驗證
+        if (sessionStorage.getItem('mahjong_authed') === 'true') {
+            document.getElementById('authBarrier').style.display = 'none';
+            document.getElementById('mainContent').classList.remove('hidden');
+            window.onload = init;
+        }
+
         let currentYear = 2026;
         let currentMonth = 0;
         let selectedDate = "2026-01-01";
@@ -294,6 +324,7 @@
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const display = document.getElementById('currentMonthDisplay');
+            if (!grid) return;
             grid.innerHTML = '';
             const date = new Date(currentYear, currentMonth, 1);
             display.innerText = `${currentYear}年 ${currentMonth + 1}月`;
@@ -379,11 +410,7 @@
             rows.forEach(row => {
                 const name = row.querySelector('.player-name').value;
                 const val = parseInt(row.querySelector('.net-input').value) || 0;
-                players.push({
-                    name,
-                    win: val > 0 ? val : 0,
-                    loss: val < 0 ? Math.abs(val) : 0
-                });
+                players.push({ name, win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                 grandTotal += val;
             });
 
@@ -422,6 +449,7 @@
             });
             const sorted = Object.entries(totals).sort((a, b) => b[1].net - a[1].net);
             const list = document.getElementById('overallStatsList');
+            if (!list) return;
             if (sorted.length === 0) { list.innerHTML = '<p class="text-center text-gray-500 py-4">目前還沒開始比賽喔！</p>'; return; }
             list.innerHTML = sorted.map(([name, data], index) => `
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
@@ -475,8 +503,6 @@
             };
             reader.readAsText(file);
         }
-
-        window.onload = init;
     </script>
 </body>
 </html>
