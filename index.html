@@ -213,8 +213,8 @@
             const tbody = document.getElementById('playerTableBody');
             tbody.innerHTML = '';
             
-            // 生成 4 個欄位，預設帶入前 4 位固定的麻友
-            for (let i = 0; i < 4; i++) {
+            // 生成 5 個欄位（WKC, Alex, JayDeep, Molly, Yachin）
+            for (let i = 0; i < 5; i++) {
                 const defaultPlayer = FIXED_PLAYERS[i] || "";
                 
                 // 產生選單選項
@@ -239,6 +239,7 @@
         }
 
         function setupInputListeners() {
+            // 事件委派或在渲染後綁定
             document.querySelectorAll('.win-input, .loss-input').forEach(input => {
                 input.addEventListener('input', calculateDailyTotal);
             });
@@ -288,19 +289,20 @@
                 document.getElementById('location').value = data.location;
                 document.getElementById('rounds').value = data.rounds;
                 data.players.forEach((p, i) => {
-                    const select = rows[i].querySelector('.player-select');
-                    const inputs = rows[i].querySelectorAll('input');
-                    
-                    // 如果存的值不在選單內，可以動態加上或選其他
-                    if (!FIXED_PLAYERS.includes(p.name)) {
-                        const opt = document.createElement('option');
-                        opt.value = p.name;
-                        opt.text = p.name;
-                        select.add(opt, select.options[0]);
+                    if (rows[i]) {
+                        const select = rows[i].querySelector('.player-select');
+                        const inputs = rows[i].querySelectorAll('input');
+                        
+                        if (!FIXED_PLAYERS.includes(p.name)) {
+                            const opt = document.createElement('option');
+                            opt.value = p.name;
+                            opt.text = p.name;
+                            select.add(opt, select.options[0]);
+                        }
+                        select.value = p.name;
+                        inputs[0].value = p.win;
+                        inputs[1].value = p.loss;
                     }
-                    select.value = p.name;
-                    inputs[0].value = p.win;
-                    inputs[1].value = p.loss;
                 });
             } else {
                 document.querySelectorAll('.win-input, .loss-input').forEach(i => i.value = 0);
@@ -334,8 +336,6 @@
             const rows = document.querySelectorAll('#playerTableBody tr');
             let grandTotal = 0;
             const players = [];
-            
-            // 檢查是否有重複選擇玩家
             const selectedNames = [];
             let duplicate = false;
 
@@ -344,7 +344,7 @@
                 const win = parseInt(row.querySelector('.win-input').value) || 0;
                 const loss = parseInt(row.querySelector('.loss-input').value) || 0;
                 
-                if (selectedNames.includes(name)) duplicate = true;
+                if (selectedNames.includes(name) && name !== "其他") duplicate = true;
                 selectedNames.push(name);
                 
                 players.push({ name, win, loss });
