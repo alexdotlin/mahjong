@@ -197,6 +197,8 @@
         let currentYear = 2026;
         let currentMonth = 0;
         let selectedDate = "2026-01-01";
+        // 固定麻友名單
+        const FIXED_PLAYERS = ["WKC", "Alex", "JayDeep", "Molly", "Yachin"];
         let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_data')) || {};
 
         function init() {
@@ -210,21 +212,38 @@
         function renderPlayerRows() {
             const tbody = document.getElementById('playerTableBody');
             tbody.innerHTML = '';
-            ['A', 'B', 'C', 'D'].forEach((p, idx) => {
+            
+            // 生成 4 個欄位，預設帶入前 4 位固定的麻友
+            for (let i = 0; i < 4; i++) {
+                const defaultPlayer = FIXED_PLAYERS[i] || "";
+                
+                // 產生選單選項
+                const optionsHtml = FIXED_PLAYERS.map(name => 
+                    `<option value="${name}" ${name === defaultPlayer ? 'selected' : ''}>${name}</option>`
+                ).join('');
+
                 tbody.innerHTML += `
                     <tr class="border-b border-pink-50">
-                        <td class="py-2"><input type="text" class="w-14 sm:w-20" value="玩家${p}"></td>
+                        <td class="py-2">
+                            <select class="player-select w-20 sm:w-24">
+                                ${optionsHtml}
+                                <option value="其他">其他</option>
+                            </select>
+                        </td>
                         <td class="py-2"><input type="number" class="win-input w-12 sm:w-16" value="0"></td>
                         <td class="py-2"><input type="number" class="loss-input w-12 sm:w-16" value="0"></td>
                         <td class="py-2 text-right font-bold row-total text-[11px]">0</td>
                     </tr>
                 `;
-            });
+            }
         }
 
         function setupInputListeners() {
             document.querySelectorAll('.win-input, .loss-input').forEach(input => {
                 input.addEventListener('input', calculateDailyTotal);
+            });
+            document.querySelectorAll('.player-select').forEach(select => {
+                select.addEventListener('change', calculateDailyTotal);
             });
         }
 
@@ -261,22 +280,36 @@
             selectedDate = dateStr;
             document.getElementById('selectedDateDisplay').innerText = dateStr;
             renderCalendar();
+            
+            const rows = document.querySelectorAll('#playerTableBody tr');
             if (mahjongData[dateStr]) {
                 const data = mahjongData[dateStr];
                 document.getElementById('gameType').value = data.type;
                 document.getElementById('location').value = data.location;
                 document.getElementById('rounds').value = data.rounds;
-                const rows = document.querySelectorAll('#playerTableBody tr');
                 data.players.forEach((p, i) => {
+                    const select = rows[i].querySelector('.player-select');
                     const inputs = rows[i].querySelectorAll('input');
-                    inputs[0].value = p.name;
-                    inputs[1].value = p.win;
-                    inputs[2].value = p.loss;
+                    
+                    // 如果存的值不在選單內，可以動態加上或選其他
+                    if (!FIXED_PLAYERS.includes(p.name)) {
+                        const opt = document.createElement('option');
+                        opt.value = p.name;
+                        opt.text = p.name;
+                        select.add(opt, select.options[0]);
+                    }
+                    select.value = p.name;
+                    inputs[0].value = p.win;
+                    inputs[1].value = p.loss;
                 });
             } else {
                 document.querySelectorAll('.win-input, .loss-input').forEach(i => i.value = 0);
                 document.getElementById('location').value = '';
                 document.getElementById('rounds').value = 1;
+                // 重置玩家為預設順序
+                rows.forEach((row, i) => {
+                    row.querySelector('.player-select').value = FIXED_PLAYERS[i] || "其他";
+                });
             }
             calculateDailyTotal();
         }
@@ -301,14 +334,26 @@
             const rows = document.querySelectorAll('#playerTableBody tr');
             let grandTotal = 0;
             const players = [];
+            
+            // 檢查是否有重複選擇玩家
+            const selectedNames = [];
+            let duplicate = false;
+
             rows.forEach(row => {
-                const name = row.querySelectorAll('input')[0].value || "匿名";
+                const name = row.querySelector('.player-select').value;
                 const win = parseInt(row.querySelector('.win-input').value) || 0;
                 const loss = parseInt(row.querySelector('.loss-input').value) || 0;
+                
+                if (selectedNames.includes(name)) duplicate = true;
+                selectedNames.push(name);
+                
                 players.push({ name, win, loss });
                 grandTotal += (win - loss);
             });
-            if (grandTotal !== 0) { alert("帳目不對喔！"); return; }
+
+            if (duplicate) { alert("不可選擇重複的玩家！"); return; }
+            if (grandTotal !== 0) { alert("帳目不對喔！總和須為 0。"); return; }
+            
             mahjongData[selectedDate] = {
                 type: document.getElementById('gameType').value,
                 location: document.getElementById('location').value,
