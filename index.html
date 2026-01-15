@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🧧 2026 阿土伯 (Google 授權版)</title>
+    <title>🧧 2026 阿土伯 (GitHub 部署版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -142,7 +142,7 @@
     <div id="authBarrier">
         <div class="festive-card p-8 max-w-sm w-full text-center">
             <h2 class="text-3xl font-black text-red-700 mb-6">阿土伯測試入口</h2>
-            <div id="authLoading" class="mb-4 text-gray-500 font-bold">正在確認身分...</div>
+            <div id="authLoading" class="mb-4 text-white font-bold bg-black/20 p-2 rounded">正在確認身分...</div>
             
             <div id="loginSection" class="hidden">
                 <p class="text-lg font-bold mb-6 text-gray-600">請使用指定的 Gmail 登入</p>
@@ -156,7 +156,7 @@
                 <p class="text-xl font-black text-red-600 mb-4">🚫 權限不足</p>
                 <p id="deniedEmail" class="text-gray-500 mb-6 break-all"></p>
                 <p class="text-sm text-gray-400 mb-6">您的帳號不在允許名單內</p>
-                <button onclick="logout()" class="text-red-600 font-bold underline">切換帳號</button>
+                <button onclick="logout()" class="text-red-600 font-bold underline text-lg">切換帳號</button>
             </div>
         </div>
     </div>
@@ -272,36 +272,49 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- 設定區 ---
-        // 請在此填入您的 Gmail，可以填多個
+        // --- 重要：請在這裡填入您的 Firebase 設定 ---
+        // 這些資訊可以從 Firebase Console -> 專案設定 -> 一般 -> 您的應用程式中找到
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIF6Na7v-2fZc2ZeK97y8nsicwuLArSwY",
+            authDomain: "richman-6a91a.firebaseapp.com",
+            projectId: "richman-6a91a",
+            storageBucket: "richman-6a91a.firebasestorage.app",
+            messagingSenderId: "您759410355663",
+            appId: "1:759410355663:web:08d17f99f9772d1f0af6ba"
+        };
+
+        // 如果在我的測試環境，則自動嘗試讀取環境變數
+        let configToUse = firebaseConfig;
+        try {
+            if (typeof __firebase_config !== 'undefined' && firebaseConfig.apiKey.includes("您的")) {
+                configToUse = JSON.parse(__firebase_config);
+            }
+        } catch (e) {}
+
         const ALLOWED_EMAILS = [
             "alexl.051906@gmail.com", 
             "yachin2010@gmail.com"
         ];
         
-        // Firebase 設定 (使用環境提供的變數)
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(configToUse);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // 登入功能
         window.loginWithGoogle = async () => {
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login failed", error);
-                alert("登入失敗，請稍後再試。");
+                alert("登入失敗，可能原因：網域未授權。請檢查 Firebase Console 設定。");
             }
         };
 
-        // 登出功能
         window.logout = () => {
-            signOut(auth);
-            location.reload();
+            signOut(auth).then(() => {
+                location.reload();
+            });
         };
 
-        // 監聽登入狀態
         onAuthStateChanged(auth, (user) => {
             const loading = document.getElementById('authLoading');
             const loginSection = document.getElementById('loginSection');
@@ -309,23 +322,21 @@
             const mainContent = document.getElementById('mainContent');
             const authBarrier = document.getElementById('authBarrier');
 
-            loading.classList.add('hidden');
+            if (loading) loading.classList.add('hidden');
 
             if (user) {
                 if (ALLOWED_EMAILS.includes(user.email)) {
-                    // 驗證成功
                     authBarrier.style.display = 'none';
                     mainContent.classList.remove('hidden');
                     document.getElementById('userDisplay').innerText = user.displayName || user.email;
-                    init(); // 初始化麻將程式
+                    init(); 
                 } else {
-                    // 帳號不在名單內
                     loginSection.classList.add('hidden');
                     accessDenied.classList.remove('hidden');
                     document.getElementById('deniedEmail').innerText = user.email;
+                    authBarrier.style.display = 'flex';
                 }
             } else {
-                // 未登入
                 loginSection.classList.remove('hidden');
                 accessDenied.classList.add('hidden');
                 mainContent.classList.add('hidden');
@@ -336,7 +347,7 @@
         // --- 麻將主程式邏輯 ---
         let currentYear = 2026;
         let currentMonth = 0;
-        let selectedDate = "2026-01-01";
+        let selectedDate = new Date().toISOString().split('T')[0].substring(0, 10);
         const FIXED_PLAYERS = ["王員外", "林大叔", "葉大師", "莫莉", "YaYa"];
         let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_elderly')) || {};
 
@@ -345,7 +356,6 @@
             renderCalendar();
             selectDate(selectedDate);
             updateOverallStats();
-            setupInputListeners();
         }
 
         function showToast(msg) {
@@ -373,6 +383,7 @@
                     </tr>
                 `;
             }
+            setupInputListeners();
         }
 
         function setupInputListeners() {
@@ -410,7 +421,7 @@
             renderCalendar();
         };
 
-        function selectDate(dateStr) {
+        window.selectDate = (dateStr) => {
             selectedDate = dateStr;
             const display = document.getElementById('selectedDateDisplay');
             if (display) display.innerText = dateStr;
@@ -434,7 +445,7 @@
                 });
             }
             calculateDailyTotal();
-        }
+        };
 
         function calculateDailyTotal() {
             const rows = document.querySelectorAll('#playerTableBody tr');
