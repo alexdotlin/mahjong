@@ -142,11 +142,11 @@
             <h2 class="text-3xl font-black text-red-700 mb-6">阿土伯 系統入口</h2>
             
             <div id="configError" class="hidden mb-6 bg-yellow-100 p-4 rounded-xl border-2 border-yellow-500 text-left">
-                <p class="font-bold text-yellow-800">⚠️ 尚未設定金鑰</p>
-                <p class="text-xs text-yellow-700 mt-2">請在 HTML 檔案中將 "填入您的_API_KEY_字串" 換成真正的 API Key。</p>
+                <p class="font-bold text-yellow-800">⚠️ 設定有誤</p>
+                <p id="configErrorMessage" class="text-xs text-yellow-700 mt-2">請確認您的 API Key 與 Firebase 設定。</p>
             </div>
 
-            <div id="authLoading" class="mb-4 text-white font-bold bg-black/20 p-2 rounded">正在確認身分...</div>
+            <div id="authLoading" class="mb-4 text-white font-bold bg-black/20 p-2 rounded text-sm">正在讀取驗證模組...</div>
             
             <div id="loginSection" class="hidden">
                 <p class="text-lg font-bold mb-6 text-gray-600">請使用指定的 Gmail 登入</p>
@@ -154,12 +154,13 @@
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24">
                     使用 Google 登入
                 </button>
-                <p class="mt-4 text-[10px] text-red-100">* 手機版建議使用 Safari/Chrome 開啟</p>
+                <p class="mt-4 text-[10px] text-red-100 italic">* 建議使用 Safari 或 Chrome 開啟</p>
             </div>
 
             <div id="accessDenied" class="hidden">
                 <p class="text-xl font-black text-red-600 mb-4">🚫 權限不足</p>
-                <p id="deniedEmail" class="text-gray-500 mb-6 break-all text-sm"></p>
+                <p id="deniedEmail" class="text-gray-500 mb-6 break-all text-sm font-bold"></p>
+                <p class="text-xs text-gray-400 mb-4">您的帳號不在授權清單內。</p>
                 <button onclick="logout()" class="btn-large">切換帳號</button>
             </div>
         </div>
@@ -173,8 +174,8 @@
                     <p class="text-lg text-red-500 font-bold">字體加大・簡單好用</p>
                 </div>
                 <div class="flex items-center gap-3 bg-white p-2 rounded-full shadow-sm border border-red-100">
-                    <span id="userDisplay" class="text-sm font-bold text-gray-600 px-3"></span>
-                    <button onclick="logout()" class="bg-gray-100 px-3 py-1 rounded-full text-xs font-bold text-gray-400">登出</button>
+                    <span id="userDisplay" class="text-sm font-bold text-gray-600 px-3 border-r border-gray-100"></span>
+                    <button onclick="logout()" class="px-3 py-1 text-xs font-bold text-red-400 hover:text-red-600 transition-colors">登出</button>
                 </div>
             </header>
 
@@ -184,9 +185,9 @@
                     <div class="festive-card p-6">
                         <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
                         <div class="flex justify-between items-center mb-6">
-                            <button onclick="changeMonth(-1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❮</button>
+                            <button onclick="changeMonth(-1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black leading-none">❮</button>
                             <h2 id="currentMonthDisplay" class="text-2xl font-black">2026年 1月</h2>
-                            <button onclick="changeMonth(1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black">❯</button>
+                            <button onclick="changeMonth(1)" class="bg-gray-200 p-4 rounded-full text-2xl font-black leading-none">❯</button>
                         </div>
                         <div class="grid grid-cols-7 gap-3 text-center text-sm font-black text-red-600 mb-2">
                             <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
@@ -206,7 +207,7 @@
                     <div class="festive-card p-6 space-y-4">
                         <h3 class="text-xl font-black text-center mb-2">💾 資料管理</h3>
                         <button onclick="exportToCSV()" class="btn-gold-large">匯出手機備份 (CSV)</button>
-                        <button onclick="document.getElementById('importInput').click()" class="text-lg font-bold w-full p-4 border-2 border-dashed border-gray-400 rounded-xl text-gray-600">讀取舊資料</button>
+                        <button onclick="document.getElementById('importInput').click()" class="text-lg font-bold w-full p-4 border-2 border-dashed border-gray-400 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors">讀取舊資料</button>
                         <input type="file" id="importInput" accept=".csv" onchange="importFromCSV(event)">
                     </div>
                 </div>
@@ -216,17 +217,17 @@
                     <div class="festive-card p-6 md:p-8">
                         <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
                             <div>
-                                <span class="text-lg font-bold text-gray-500">輸入日期：</span>
+                                <span class="text-lg font-bold text-gray-500">正在輸入：</span>
                                 <h2 class="text-4xl font-black text-red-600" id="selectedDateDisplay">2026-01-01</h2>
                             </div>
-                            <div id="balanceBadge" class="p-3 rounded-xl text-lg font-black bg-gray-200 text-gray-600">
+                            <div id="balanceBadge" class="p-3 rounded-xl text-lg font-black bg-gray-200 text-gray-600 shadow-inner">
                                 未算帳
                             </div>
                         </div>
 
                         <div class="mb-8">
                             <label class="big-label">🧧 今日財位</label>
-                            <select id="fortunePosition">
+                            <select id="fortunePosition" class="cursor-pointer">
                                 <option value="">--- 請選擇 ---</option>
                                 <option value="窗邊">窗邊</option>
                                 <option value="電視">電視</option>
@@ -237,13 +238,13 @@
 
                         <div class="mb-8">
                             <h3 class="big-label border-l-8 border-red-600 pl-3 mb-4">填入贏(+)/輸(-)分數</h3>
-                            <div class="overflow-hidden border-2 border-gray-100 rounded-xl">
+                            <div class="overflow-hidden border-2 border-gray-100 rounded-xl shadow-sm">
                                 <table class="w-full text-left">
                                     <thead class="bg-red-50">
                                         <tr class="text-lg font-black">
-                                            <th class="p-4">玩家</th>
-                                            <th class="p-4 text-center">分數</th>
-                                            <th class="p-4 text-right">小計</th>
+                                            <th class="p-4 text-red-800">玩家</th>
+                                            <th class="p-4 text-center text-red-800">分數</th>
+                                            <th class="p-4 text-right text-red-800">小計</th>
                                         </tr>
                                     </thead>
                                     <tbody id="playerTableBody" class="divide-y divide-gray-100"></tbody>
@@ -256,9 +257,9 @@
                                 ※ 總和需為 0 且選好財位喔！
                             </div>
                             <button id="saveBtn" onclick="saveData()" class="btn-large">
-                                🀄 確認存檔 (發財！)
+                                🀄 確認存檔 (發大財！)
                             </button>
-                            <button onclick="clearForm()" class="text-lg font-bold text-gray-400 w-full py-4 underline">
+                            <button onclick="clearForm()" class="text-lg font-bold text-gray-400 w-full py-4 underline hover:text-gray-600 transition-colors">
                                 清除今日紀錄
                             </button>
                         </div>
@@ -276,7 +277,7 @@
 
         // --- 1. 填寫區 ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k", // <--- 必須填入 AIza 開頭的文字
+            apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k",
             authDomain: "richman-6a91a.firebaseapp.com",
             projectId: "richman-6a91a",
             storageBucket: "richman-6a91a.firebasestorage.app",
@@ -289,10 +290,8 @@
             "yachin2010@gmail.com"
         ];
 
-        // --- 2. 初始化檢查 ---
+        // --- 2. 初始化 ---
         let configToUse = firebaseConfig;
-        const isPlaceholder = firebaseConfig.apiKey.includes("填入");
-        
         try {
             if (typeof __firebase_config !== 'undefined') {
                 configToUse = JSON.parse(__firebase_config);
@@ -305,15 +304,12 @@
 
         // 登入邏輯
         window.loginWithGoogle = async () => {
-            if (isPlaceholder && typeof __firebase_config === 'undefined') {
-                alert("錯誤：您尚未在程式碼中更換有效的 API Key。");
-                return;
-            }
             try {
+                // 手機端使用 Redirect 最穩定
                 await signInWithRedirect(auth, provider);
             } catch (error) {
-                console.error("Login failed", error);
-                alert("登入失敗: " + error.message);
+                console.error("Login initiation failed", error);
+                alert("啟動登入失敗: " + error.message);
             }
         };
 
@@ -323,32 +319,33 @@
             });
         };
 
-        // 處理 Redirect 結果與狀態
-        onAuthStateChanged(auth, async (user) => {
+        // 重要：分開處理 Redirect 結果，避免在 onAuthStateChanged 內重複呼叫
+        async function checkRedirect() {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result && result.user) {
+                    console.log("跳轉登入成功:", result.user.email);
+                }
+            } catch (err) {
+                console.error("Redirect Result Error", err);
+                if (err.message.includes("requested action is invalid")) {
+                    document.getElementById('configError').classList.remove('hidden');
+                    document.getElementById('configErrorMessage').innerText = "⚠️ 錯誤：Firebase 拒絕存取。請確認您的 GitHub 網域 (alexdotlin.github.io) 已在 Firebase Console 的「授權網域」清單中。";
+                } else {
+                    alert("驗證過程錯誤: " + err.message);
+                }
+            }
+        }
+
+        // 監聽身分狀態
+        onAuthStateChanged(auth, (user) => {
             const loading = document.getElementById('authLoading');
             const loginSection = document.getElementById('loginSection');
             const accessDenied = document.getElementById('accessDenied');
             const mainContent = document.getElementById('mainContent');
             const authBarrier = document.getElementById('authBarrier');
-            const configError = document.getElementById('configError');
 
-            if (isPlaceholder && typeof __firebase_config === 'undefined') {
-                configError.classList.remove('hidden');
-                loading.classList.add('hidden');
-                return;
-            }
-
-            // 嘗試取得 Redirect 結果
-            try {
-                await getRedirectResult(auth);
-            } catch (err) {
-                console.error("Redirect Error", err);
-                if (err.message.includes("requested action is invalid")) {
-                    alert("⚠️ 錯誤：這通常是因為您的 GitHub 網域未在 Firebase 控制台設定為『授權網域』。");
-                }
-            }
-
-            loading.classList.add('hidden');
+            if (loading) loading.classList.add('hidden');
 
             if (user) {
                 if (ALLOWED_EMAILS.includes(user.email)) {
@@ -370,9 +367,12 @@
             }
         });
 
+        // 啟動頁面時檢查跳轉結果
+        checkRedirect();
+
         // --- 3. 麻將主程式邏輯 ---
         let currentYear = 2026;
-        let currentMonth = 0;
+        let currentMonth = new Date().getMonth();
         let selectedDate = new Date().toISOString().split('T')[0];
         const FIXED_PLAYERS = ["WKC", "Alex", "JayDeep", "Molly", "Yachin"];
         let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_v2')) || {};
@@ -392,8 +392,8 @@
                 const name = FIXED_PLAYERS[i] || "其他";
                 tbody.innerHTML += `
                     <tr>
-                        <td class="p-4"><input type="text" class="player-name font-black border-none bg-transparent text-xl" value="${name}"></td>
-                        <td class="p-4"><input type="number" class="net-input text-center text-2xl font-black w-full" placeholder="0"></td>
+                        <td class="p-4 font-bold text-gray-700">${name}<input type="hidden" class="player-name" value="${name}"></td>
+                        <td class="p-4"><input type="number" class="net-input text-center text-2xl font-black w-full bg-gray-50 rounded-lg py-2 focus:bg-white transition-colors" placeholder="0"></td>
                         <td class="p-4 text-right text-2xl font-black row-total text-gray-300">0</td>
                     </tr>
                 `;
@@ -443,16 +443,12 @@
                 document.getElementById('fortunePosition').value = data.fortunePosition || "";
                 data.players.forEach((p, i) => {
                     if (rows[i]) {
-                        rows[i].querySelector('.player-name').value = p.name;
                         rows[i].querySelector('.net-input').value = (p.win - p.loss) || 0;
                     }
                 });
             } else {
                 document.querySelectorAll('.net-input').forEach(i => i.value = "");
                 document.getElementById('fortunePosition').value = '';
-                rows.forEach((row, i) => {
-                    row.querySelector('.player-name').value = FIXED_PLAYERS[i] || "其他";
-                });
             }
             calculateDailyTotal();
         };
@@ -491,7 +487,7 @@
                 players.push({ name, win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                 grandTotal += val;
             });
-            if (grandTotal !== 0) { alert("帳目不對喔！"); return; }
+            if (grandTotal !== 0) { alert("帳目不對喔！總共差了 " + grandTotal); return; }
             mahjongData[selectedDate] = { fortunePosition: fortune, players: players };
             localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
             updateOverallStats();
@@ -500,7 +496,7 @@
         };
 
         window.clearForm = () => {
-            if(confirm("確定刪除？")) {
+            if(confirm("確定刪除這天的紀錄嗎？")) {
                 delete mahjongData[selectedDate];
                 localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
                 selectDate(selectedDate);
@@ -521,10 +517,10 @@
             if (!list) return;
             if (sorted.length === 0) { list.innerHTML = '<p class="text-center text-gray-500 py-4">目前還沒開始比賽喔！</p>'; return; }
             list.innerHTML = sorted.map(([name, data], index) => `
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-200 shadow-sm">
                     <div class="flex items-center gap-4">
                         <span class="text-xl w-8 h-8 flex items-center justify-center rounded-full ${index === 0 ? 'bg-yellow-400 text-white' : 'bg-gray-200 text-gray-500'} font-black">${index+1}</span>
-                        <span class="text-2xl font-black">${name}</span>
+                        <span class="text-2xl font-black text-gray-700">${name}</span>
                     </div>
                     <div class="font-black text-2xl ${data.net >= 0 ? 'text-green-600' : 'text-red-600'}">${data.net >= 0 ? '+' : ''}${data.net}</div>
                 </div>
@@ -532,7 +528,7 @@
         }
 
         window.exportToCSV = () => {
-            if (Object.keys(mahjongData).length === 0) { alert("無資料"); return; }
+            if (Object.keys(mahjongData).length === 0) { alert("目前沒有資料可以匯出。"); return; }
             let csv = "\ufeff日期,財位,玩家,分數\n";
             Object.keys(mahjongData).sort().forEach(date => {
                 const d = mahjongData[date];
@@ -542,7 +538,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `麻將紀錄_${new Date().toLocaleDateString()}.csv`;
+            link.download = `麻將大數據備份_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         };
 
@@ -562,10 +558,13 @@
                         const val = parseInt(cols[3]);
                         newData[date].players.push({ name: cols[2], win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                     }
-                    mahjongData = { ...mahjongData, ...newData };
-                    localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
-                    initApp();
-                } catch (err) { alert("讀取失敗"); }
+                    if (confirm("已讀取資料，確定要覆蓋或合併現有數據嗎？")) {
+                        mahjongData = { ...mahjongData, ...newData };
+                        localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
+                        initApp();
+                        alert("匯入成功！");
+                    }
+                } catch (err) { alert("檔案解析失敗，請確認格式。"); }
             };
             reader.readAsText(file);
         };
