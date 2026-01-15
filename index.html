@@ -22,7 +22,6 @@
             padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
         }
 
-        /* 鎖定畫面樣式 */
         #authBarrier {
             position: fixed;
             inset: 0;
@@ -72,7 +71,6 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-google:hover { background-color: #f8f8f8; }
 
         .btn-gold-large {
             background-color: #ffcc00;
@@ -139,7 +137,6 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- 身分驗證鎖定畫面 -->
     <div id="authBarrier">
         <div class="festive-card p-8 max-w-sm w-full text-center">
             <h2 class="text-3xl font-black text-red-700 mb-6">阿土伯測試入口</h2>
@@ -151,6 +148,7 @@
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24">
                     使用 Google 登入
                 </button>
+                <p class="mt-4 text-xs text-red-100 font-bold">* 若按鈕沒反應，請重新整理頁面</p>
             </div>
 
             <div id="accessDenied" class="hidden">
@@ -162,7 +160,6 @@
         </div>
     </div>
 
-    <!-- 主要內容區 (初始隱藏) -->
     <div id="mainContent" class="hidden">
         <div class="max-w-4xl mx-auto">
             <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -177,7 +174,6 @@
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-                <!-- Left: Calendar & Leaderboard -->
                 <div class="md:col-span-5 space-y-8">
                     <div class="festive-card p-6">
                         <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
@@ -209,7 +205,6 @@
                     </div>
                 </div>
 
-                <!-- Right: Content Entry -->
                 <div class="md:col-span-7">
                     <div class="festive-card p-6 md:p-8">
                         <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
@@ -268,12 +263,11 @@
 
     <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-10 py-6 rounded-2xl bg-black/90 text-white text-2xl font-black opacity-0 transition-opacity pointer-events-none z-50 shadow-2xl"></div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- 填寫區 ---
+        // --- 填寫區 (請填入您新產生的金鑰) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k",
             authDomain: "richman-6a91a.firebaseapp.com",
@@ -283,29 +277,30 @@
             appId: "1:759410355663:web:08d17f99f9772d1f0af6ba"
         };
 
-        // 自動適配環境
+        // 自動適配測試與線上環境
         let configToUse = firebaseConfig;
         try {
-            if (typeof __firebase_config !== 'undefined' && firebaseConfig.apiKey.includes("填入")) {
+            if (typeof __firebase_config !== 'undefined' && (firebaseConfig.apiKey === "" || firebaseConfig.apiKey.includes("填入"))) {
                 configToUse = JSON.parse(__firebase_config);
             }
         } catch (e) {}
+
+        const app = initializeApp(configToUse);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
         const ALLOWED_EMAILS = [
             "alexl.051906@gmail.com", 
             "yachin2010@gmail.com"
         ];
-        
-        const app = initializeApp(configToUse);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
+        // 登入：改用 Redirect 避免手機彈出視窗被攔截
         window.loginWithGoogle = async () => {
             try {
-                await signInWithPopup(auth, provider);
+                await signInWithRedirect(auth, provider);
             } catch (error) {
-                console.error("Login failed", error);
-                alert("登入失敗，請確認 Firebase 設定中已新增 GitHub 網域為授權網域。");
+                console.error("Redirect Login failed", error);
+                alert("啟動登入失敗: " + error.message);
             }
         };
 
@@ -315,6 +310,26 @@
             });
         };
 
+        // 處理從 Google 跳轉回來的結果
+        async function handleLoginResult() {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result && result.user) {
+                    console.log("Logged in via redirect", result.user.email);
+                }
+            } catch (error) {
+                console.error("Redirect error", error);
+                if (error.code === 'auth/credential-already-in-use') {
+                    alert("該憑證已在使用中。");
+                } else if (error.code === 'auth/argument-error') {
+                    console.warn("No pending redirect");
+                } else {
+                    alert("登入過程發生錯誤: " + error.message);
+                }
+            }
+        }
+
+        // 監聽狀態
         onAuthStateChanged(auth, (user) => {
             const loading = document.getElementById('authLoading');
             const loginSection = document.getElementById('loginSection');
@@ -343,6 +358,9 @@
                 authBarrier.style.display = 'flex';
             }
         });
+
+        // 啟動時先檢查 Redirect
+        handleLoginResult();
 
         // --- 麻將主程式邏輯 ---
         let currentYear = 2026;
@@ -472,7 +490,6 @@
         window.saveData = () => {
             const fortune = document.getElementById('fortunePosition').value;
             if (!fortune) { showToast("請選一個財位！"); return; }
-            
             const rows = document.querySelectorAll('#playerTableBody tr');
             let grandTotal = 0;
             const players = [];
@@ -482,13 +499,8 @@
                 players.push({ name, win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                 grandTotal += val;
             });
-
             if (grandTotal !== 0) { showToast("錢算不對喔，再檢查一下！"); return; }
-            
-            mahjongData[selectedDate] = {
-                fortunePosition: fortune,
-                players: players
-            };
+            mahjongData[selectedDate] = { fortunePosition: fortune, players: players };
             localStorage.setItem('mahjong_2026_elderly', JSON.stringify(mahjongData));
             updateOverallStats();
             renderCalendar();
