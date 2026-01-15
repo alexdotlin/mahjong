@@ -99,6 +99,7 @@
             font-weight: 700;
             background: #fdfdfd;
             border: 2px solid #eee;
+            position: relative;
         }
 
         .calendar-day.selected {
@@ -176,7 +177,7 @@
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-                <!-- Left -->
+                <!-- Left: Calendar & Leaderboard -->
                 <div class="md:col-span-5 space-y-8">
                     <div class="festive-card p-6">
                         <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
@@ -208,7 +209,7 @@
                     </div>
                 </div>
 
-                <!-- Right -->
+                <!-- Right: Content Entry -->
                 <div class="md:col-span-7">
                     <div class="festive-card p-6 md:p-8">
                         <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
@@ -272,21 +273,20 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- 重要：請在這裡填入您的 Firebase 設定 ---
-        // 這些資訊可以從 Firebase Console -> 專案設定 -> 一般 -> 您的應用程式中找到
+        // --- 填寫區 ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCIF6Na7v-2fZc2ZeK97y8nsicwuLArSwY",
+            apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k",
             authDomain: "richman-6a91a.firebaseapp.com",
             projectId: "richman-6a91a",
             storageBucket: "richman-6a91a.firebasestorage.app",
-            messagingSenderId: "您759410355663",
+            messagingSenderId: "759410355663",
             appId: "1:759410355663:web:08d17f99f9772d1f0af6ba"
         };
 
-        // 如果在我的測試環境，則自動嘗試讀取環境變數
+        // 自動適配環境
         let configToUse = firebaseConfig;
         try {
-            if (typeof __firebase_config !== 'undefined' && firebaseConfig.apiKey.includes("您的")) {
+            if (typeof __firebase_config !== 'undefined' && firebaseConfig.apiKey.includes("填入")) {
                 configToUse = JSON.parse(__firebase_config);
             }
         } catch (e) {}
@@ -305,7 +305,7 @@
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login failed", error);
-                alert("登入失敗，可能原因：網域未授權。請檢查 Firebase Console 設定。");
+                alert("登入失敗，請確認 Firebase 設定中已新增 GitHub 網域為授權網域。");
             }
         };
 
@@ -329,7 +329,7 @@
                     authBarrier.style.display = 'none';
                     mainContent.classList.remove('hidden');
                     document.getElementById('userDisplay').innerText = user.displayName || user.email;
-                    init(); 
+                    initApp(); 
                 } else {
                     loginSection.classList.add('hidden');
                     accessDenied.classList.remove('hidden');
@@ -347,18 +347,18 @@
         // --- 麻將主程式邏輯 ---
         let currentYear = 2026;
         let currentMonth = 0;
-        let selectedDate = new Date().toISOString().split('T')[0].substring(0, 10);
+        let selectedDate = new Date().toISOString().split('T')[0];
         const FIXED_PLAYERS = ["王員外", "林大叔", "葉大師", "莫莉", "YaYa"];
         let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_elderly')) || {};
 
-        function init() {
+        function initApp() {
             renderPlayerRows();
             renderCalendar();
             selectDate(selectedDate);
             updateOverallStats();
         }
 
-        function showToast(msg) {
+        window.showToast = (msg) => {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.classList.add('opacity-100');
@@ -563,7 +563,7 @@
                     }
                     mahjongData = { ...mahjongData, ...newData };
                     localStorage.setItem('mahjong_2026_elderly', JSON.stringify(mahjongData));
-                    init();
+                    initApp();
                     showToast("舊資料讀取成功！");
                 } catch (err) { showToast("讀取失敗"); }
             };
