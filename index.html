@@ -139,7 +139,13 @@
 
     <div id="authBarrier">
         <div class="festive-card p-8 max-w-sm w-full text-center">
-            <h2 class="text-3xl font-black text-red-700 mb-6">阿土伯測試入口</h2>
+            <h2 class="text-3xl font-black text-red-700 mb-6">阿土伯 系統入口</h2>
+            
+            <div id="configError" class="hidden mb-6 bg-yellow-100 p-4 rounded-xl border-2 border-yellow-500 text-left">
+                <p class="font-bold text-yellow-800">⚠️ 尚未設定金鑰</p>
+                <p class="text-xs text-yellow-700 mt-2">請在 HTML 檔案中將 "填入您的_API_KEY_字串" 換成真正的 API Key。</p>
+            </div>
+
             <div id="authLoading" class="mb-4 text-white font-bold bg-black/20 p-2 rounded">正在確認身分...</div>
             
             <div id="loginSection" class="hidden">
@@ -148,14 +154,13 @@
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24">
                     使用 Google 登入
                 </button>
-                <p class="mt-4 text-xs text-red-100 font-bold">* 若按鈕沒反應，請重新整理頁面</p>
+                <p class="mt-4 text-[10px] text-red-100">* 手機版建議使用 Safari/Chrome 開啟</p>
             </div>
 
             <div id="accessDenied" class="hidden">
                 <p class="text-xl font-black text-red-600 mb-4">🚫 權限不足</p>
-                <p id="deniedEmail" class="text-gray-500 mb-6 break-all"></p>
-                <p class="text-sm text-gray-400 mb-6">您的帳號不在允許名單內</p>
-                <button onclick="logout()" class="text-red-600 font-bold underline text-lg">切換帳號</button>
+                <p id="deniedEmail" class="text-gray-500 mb-6 break-all text-sm"></p>
+                <button onclick="logout()" class="btn-large">切換帳號</button>
             </div>
         </div>
     </div>
@@ -174,6 +179,7 @@
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <!-- 左側：日曆與排行 -->
                 <div class="md:col-span-5 space-y-8">
                     <div class="festive-card p-6">
                         <h2 class="text-xl font-black text-center mb-4 text-red-800">第一步：選日期</h2>
@@ -193,23 +199,24 @@
                             🏆 總排行榜
                         </h3>
                         <div id="overallStatsList" class="space-y-3">
-                            <p class="text-center text-gray-500 py-4">目前還沒開始比賽喔！</p>
+                            <p class="text-center text-gray-500 py-4">尚無征戰紀錄</p>
                         </div>
                     </div>
 
                     <div class="festive-card p-6 space-y-4">
-                        <h3 class="text-xl font-black text-center mb-2">💾 資料備份</h3>
-                        <button onclick="exportToCSV()" class="btn-gold-large">把資料存到手機 (CSV)</button>
+                        <h3 class="text-xl font-black text-center mb-2">💾 資料管理</h3>
+                        <button onclick="exportToCSV()" class="btn-gold-large">匯出手機備份 (CSV)</button>
                         <button onclick="document.getElementById('importInput').click()" class="text-lg font-bold w-full p-4 border-2 border-dashed border-gray-400 rounded-xl text-gray-600">讀取舊資料</button>
                         <input type="file" id="importInput" accept=".csv" onchange="importFromCSV(event)">
                     </div>
                 </div>
 
+                <!-- 右側：填寫區 -->
                 <div class="md:col-span-7">
                     <div class="festive-card p-6 md:p-8">
                         <div class="flex justify-between items-center mb-8 border-b-8 border-red-50 pb-6">
                             <div>
-                                <span class="text-lg font-bold text-gray-500">正在輸入日期：</span>
+                                <span class="text-lg font-bold text-gray-500">輸入日期：</span>
                                 <h2 class="text-4xl font-black text-red-600" id="selectedDateDisplay">2026-01-01</h2>
                             </div>
                             <div id="balanceBadge" class="p-3 rounded-xl text-lg font-black bg-gray-200 text-gray-600">
@@ -218,25 +225,25 @@
                         </div>
 
                         <div class="mb-8">
-                            <label class="big-label">🧧 本次幸運財位</label>
+                            <label class="big-label">🧧 今日財位</label>
                             <select id="fortunePosition">
-                                <option value="">--- 請選擇今日財位 ---</option>
-                                <option value="客廳位">客廳位</option>
-                                <option value="靠窗戶">靠窗戶</option>
-                                <option value="電視位">電視位</option>
-                                <option value="沙發位">沙發位</option>
+                                <option value="">--- 請選擇 ---</option>
+                                <option value="窗邊">窗邊</option>
+                                <option value="電視">電視</option>
+                                <option value="沙發">沙發</option>
+                                <option value="客廳">客廳</option>
                             </select>
                         </div>
 
                         <div class="mb-8">
-                            <h3 class="big-label border-l-8 border-red-600 pl-3 mb-4">第二步：填入分數</h3>
+                            <h3 class="big-label border-l-8 border-red-600 pl-3 mb-4">填入贏(+)/輸(-)分數</h3>
                             <div class="overflow-hidden border-2 border-gray-100 rounded-xl">
                                 <table class="w-full text-left">
                                     <thead class="bg-red-50">
                                         <tr class="text-lg font-black">
-                                            <th class="p-4">玩家名稱</th>
-                                            <th class="p-4 text-center">分數大小</th>
-                                            <th class="p-4 text-right">目前小計</th>
+                                            <th class="p-4">玩家</th>
+                                            <th class="p-4 text-center">分數</th>
+                                            <th class="p-4 text-right">小計</th>
                                         </tr>
                                     </thead>
                                     <tbody id="playerTableBody" class="divide-y divide-gray-100"></tbody>
@@ -246,13 +253,13 @@
 
                         <div class="space-y-4">
                             <div class="text-lg text-red-600 font-black text-center" id="errorMsg">
-                                ※ 帳目平衡後才能存檔喔！
+                                ※ 總和需為 0 且選好財位喔！
                             </div>
                             <button id="saveBtn" onclick="saveData()" class="btn-large">
-                                🀄 確認存檔 (發財啦！)
+                                🀄 確認存檔 (發財！)
                             </button>
                             <button onclick="clearForm()" class="text-lg font-bold text-gray-400 w-full py-4 underline">
-                                清除本日紀錄
+                                清除今日紀錄
                             </button>
                         </div>
                     </div>
@@ -267,9 +274,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- 填寫區 (請填入您新產生的金鑰) ---
+        // --- 1. 填寫區 ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k",
+            apiKey: "AIzaSyCvOzf7az0cvJEN5HaVjePVKPSapqOyG_k", // <--- 必須填入 AIza 開頭的文字
             authDomain: "richman-6a91a.firebaseapp.com",
             projectId: "richman-6a91a",
             storageBucket: "richman-6a91a.firebasestorage.app",
@@ -277,10 +284,17 @@
             appId: "1:759410355663:web:08d17f99f9772d1f0af6ba"
         };
 
-        // 自動適配測試與線上環境
+        const ALLOWED_EMAILS = [
+            "alexl.051906@gmail.com", 
+            "yachin2010@gmail.com"
+        ];
+
+        // --- 2. 初始化檢查 ---
         let configToUse = firebaseConfig;
+        const isPlaceholder = firebaseConfig.apiKey.includes("填入");
+        
         try {
-            if (typeof __firebase_config !== 'undefined' && (firebaseConfig.apiKey === "" || firebaseConfig.apiKey.includes("填入"))) {
+            if (typeof __firebase_config !== 'undefined') {
                 configToUse = JSON.parse(__firebase_config);
             }
         } catch (e) {}
@@ -289,18 +303,17 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        const ALLOWED_EMAILS = [
-            "alexl.051906@gmail.com", 
-            "yachin2010@gmail.com"
-        ];
-
-        // 登入：改用 Redirect 避免手機彈出視窗被攔截
+        // 登入邏輯
         window.loginWithGoogle = async () => {
+            if (isPlaceholder && typeof __firebase_config === 'undefined') {
+                alert("錯誤：您尚未在程式碼中更換有效的 API Key。");
+                return;
+            }
             try {
                 await signInWithRedirect(auth, provider);
             } catch (error) {
-                console.error("Redirect Login failed", error);
-                alert("啟動登入失敗: " + error.message);
+                console.error("Login failed", error);
+                alert("登入失敗: " + error.message);
             }
         };
 
@@ -310,34 +323,32 @@
             });
         };
 
-        // 處理從 Google 跳轉回來的結果
-        async function handleLoginResult() {
-            try {
-                const result = await getRedirectResult(auth);
-                if (result && result.user) {
-                    console.log("Logged in via redirect", result.user.email);
-                }
-            } catch (error) {
-                console.error("Redirect error", error);
-                if (error.code === 'auth/credential-already-in-use') {
-                    alert("該憑證已在使用中。");
-                } else if (error.code === 'auth/argument-error') {
-                    console.warn("No pending redirect");
-                } else {
-                    alert("登入過程發生錯誤: " + error.message);
-                }
-            }
-        }
-
-        // 監聽狀態
-        onAuthStateChanged(auth, (user) => {
+        // 處理 Redirect 結果與狀態
+        onAuthStateChanged(auth, async (user) => {
             const loading = document.getElementById('authLoading');
             const loginSection = document.getElementById('loginSection');
             const accessDenied = document.getElementById('accessDenied');
             const mainContent = document.getElementById('mainContent');
             const authBarrier = document.getElementById('authBarrier');
+            const configError = document.getElementById('configError');
 
-            if (loading) loading.classList.add('hidden');
+            if (isPlaceholder && typeof __firebase_config === 'undefined') {
+                configError.classList.remove('hidden');
+                loading.classList.add('hidden');
+                return;
+            }
+
+            // 嘗試取得 Redirect 結果
+            try {
+                await getRedirectResult(auth);
+            } catch (err) {
+                console.error("Redirect Error", err);
+                if (err.message.includes("requested action is invalid")) {
+                    alert("⚠️ 錯誤：這通常是因為您的 GitHub 網域未在 Firebase 控制台設定為『授權網域』。");
+                }
+            }
+
+            loading.classList.add('hidden');
 
             if (user) {
                 if (ALLOWED_EMAILS.includes(user.email)) {
@@ -359,28 +370,18 @@
             }
         });
 
-        // 啟動時先檢查 Redirect
-        handleLoginResult();
-
-        // --- 麻將主程式邏輯 ---
+        // --- 3. 麻將主程式邏輯 ---
         let currentYear = 2026;
         let currentMonth = 0;
         let selectedDate = new Date().toISOString().split('T')[0];
-        const FIXED_PLAYERS = ["王員外", "林大叔", "葉大師", "莫莉", "YaYa"];
-        let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_elderly')) || {};
+        const FIXED_PLAYERS = ["WKC", "Alex", "JayDeep", "Molly", "Yachin"];
+        let mahjongData = JSON.parse(localStorage.getItem('mahjong_2026_v2')) || {};
 
         function initApp() {
             renderPlayerRows();
             renderCalendar();
             selectDate(selectedDate);
             updateOverallStats();
-        }
-
-        window.showToast = (msg) => {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('opacity-100');
-            setTimeout(() => toast.classList.remove('opacity-100'), 1500);
         }
 
         function renderPlayerRows() {
@@ -391,20 +392,12 @@
                 const name = FIXED_PLAYERS[i] || "其他";
                 tbody.innerHTML += `
                     <tr>
-                        <td class="p-4">
-                            <input type="text" class="player-name font-black border-none bg-transparent text-xl" value="${name}">
-                        </td>
-                        <td class="p-4">
-                            <input type="number" class="net-input text-center text-2xl font-black w-full" placeholder="0">
-                        </td>
+                        <td class="p-4"><input type="text" class="player-name font-black border-none bg-transparent text-xl" value="${name}"></td>
+                        <td class="p-4"><input type="number" class="net-input text-center text-2xl font-black w-full" placeholder="0"></td>
                         <td class="p-4 text-right text-2xl font-black row-total text-gray-300">0</td>
                     </tr>
                 `;
             }
-            setupInputListeners();
-        }
-
-        function setupInputListeners() {
             document.querySelectorAll('.net-input').forEach(input => {
                 input.addEventListener('input', calculateDailyTotal);
             });
@@ -445,7 +438,6 @@
             if (display) display.innerText = dateStr;
             renderCalendar();
             const rows = document.querySelectorAll('#playerTableBody tr');
-            
             if (mahjongData[dateStr]) {
                 const data = mahjongData[dateStr];
                 document.getElementById('fortunePosition').value = data.fortunePosition || "";
@@ -479,7 +471,7 @@
             if (badge) {
                 if (grandTotal === 0) {
                     badge.innerText = "✅ 帳目正確";
-                    badge.className = "p-3 rounded-xl text-lg font-black bg-green-500 text-white shadow-lg animate-bounce";
+                    badge.className = "p-3 rounded-xl text-lg font-black bg-green-500 text-white shadow-lg";
                 } else {
                     badge.innerText = `❌ 差了 ${grandTotal}`;
                     badge.className = "p-3 rounded-xl text-lg font-black bg-red-100 text-red-600";
@@ -489,7 +481,7 @@
 
         window.saveData = () => {
             const fortune = document.getElementById('fortunePosition').value;
-            if (!fortune) { showToast("請選一個財位！"); return; }
+            if (!fortune) { alert("請選財位喔！"); return; }
             const rows = document.querySelectorAll('#playerTableBody tr');
             let grandTotal = 0;
             const players = [];
@@ -499,21 +491,20 @@
                 players.push({ name, win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                 grandTotal += val;
             });
-            if (grandTotal !== 0) { showToast("錢算不對喔，再檢查一下！"); return; }
+            if (grandTotal !== 0) { alert("帳目不對喔！"); return; }
             mahjongData[selectedDate] = { fortunePosition: fortune, players: players };
-            localStorage.setItem('mahjong_2026_elderly', JSON.stringify(mahjongData));
+            localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
             updateOverallStats();
             renderCalendar();
-            showToast("🧧 存好了！恭喜發財！");
+            alert("存好了！發財發財！");
         };
 
         window.clearForm = () => {
-            if(confirm("確定要刪掉這天的紀錄嗎？")) {
+            if(confirm("確定刪除？")) {
                 delete mahjongData[selectedDate];
-                localStorage.setItem('mahjong_2026_elderly', JSON.stringify(mahjongData));
+                localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
                 selectDate(selectedDate);
                 updateOverallStats();
-                showToast("已刪除");
             }
         };
 
@@ -541,21 +532,18 @@
         }
 
         window.exportToCSV = () => {
-            if (Object.keys(mahjongData).length === 0) { showToast("還沒有資料可以存喔"); return; }
-            let csvContent = "\ufeff日期,財位,玩家,分數\n";
+            if (Object.keys(mahjongData).length === 0) { alert("無資料"); return; }
+            let csv = "\ufeff日期,財位,玩家,分數\n";
             Object.keys(mahjongData).sort().forEach(date => {
                 const d = mahjongData[date];
-                d.players.forEach(p => {
-                    csvContent += `${date},${d.fortunePosition},${p.name},${p.win - p.loss}\n`;
-                });
+                d.players.forEach(p => csv += `${date},${d.fortunePosition},${p.name},${p.win - p.loss}\n`);
             });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `我的紀錄_${new Date().toLocaleDateString()}.csv`;
+            link.download = `麻將紀錄_${new Date().toLocaleDateString()}.csv`;
             link.click();
-            showToast("檔案已經存好囉！");
         };
 
         window.importFromCSV = (event) => {
@@ -571,13 +559,13 @@
                         if (cols.length < 4) continue;
                         const date = cols[0];
                         if (!newData[date]) newData[date] = { fortunePosition: cols[1], players: [] };
-                        newData[date].players.push({ name: cols[2], win: parseInt(cols[3]) > 0 ? parseInt(cols[3]) : 0, loss: parseInt(cols[3]) < 0 ? Math.abs(parseInt(cols[3])) : 0 });
+                        const val = parseInt(cols[3]);
+                        newData[date].players.push({ name: cols[2], win: val > 0 ? val : 0, loss: val < 0 ? Math.abs(val) : 0 });
                     }
                     mahjongData = { ...mahjongData, ...newData };
-                    localStorage.setItem('mahjong_2026_elderly', JSON.stringify(mahjongData));
+                    localStorage.setItem('mahjong_2026_v2', JSON.stringify(mahjongData));
                     initApp();
-                    showToast("舊資料讀取成功！");
-                } catch (err) { showToast("讀取失敗"); }
+                } catch (err) { alert("讀取失敗"); }
             };
             reader.readAsText(file);
         };
